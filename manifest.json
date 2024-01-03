@@ -15,5 +15,11 @@
       "matches": ["*://uflix.cc/episode/*"],
       "js": ["uflix-next-button.js"]
     }
-  ]
+  ],
+
+  "browser_specific_settings": {
+  "gecko": {
+    "id": "uflix-next-button@skadlitwiniwracaja.ddns.net"
+  }
+}
 }
