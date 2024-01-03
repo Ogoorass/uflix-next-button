@@ -2,24 +2,24 @@
   "manifest_version": 2,
   "name": "uflix-next-button",
   "version": "1.0",
-
   "description": "Adds a next button to uflix series",
-
   "icons": {
     "48": "icons/slw-icon-48.png",
     "96": "icons/slw-icon-96.png"
   },
-
   "content_scripts": [
     {
-      "matches": ["*://uflix.cc/episode/*"],
-      "js": ["uflix-next-button.js"]
+      "matches": [
+        "*://uflix.cc/episode/*"
+      ],
+      "js": [
+        "uflix-next-button.js"
+      ]
     }
   ],
-
   "browser_specific_settings": {
-  "gecko": {
-    "id": "uflix-next-button@skadlitwiniwracaja.ddns.net"
+    "gecko": {
+      "id": "uflix-next-button@skadlitwiniwracaja.ddns.net"
+    }
   }
-}
 }

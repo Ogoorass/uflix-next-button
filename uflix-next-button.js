@@ -1,7 +1,7 @@
 
 let current_episode_url_raw = document.URL
 
-if (current_episode_url_raw.search("nextSeson") > 0){
+if (current_episode_url_raw.search("nextSeson") > 0) {
     alert("Next seson!")
 }
 
@@ -9,7 +9,7 @@ let position = current_episode_url_raw.indexOf("?")
 
 // check if url ends with some parameters
 var current_episode_url
-if (position > 0){
+if (position > 0) {
     current_episode_url = current_episode_url_raw.slice(0, position)
 } else {
     current_episode_url = current_episode_url_raw
@@ -27,7 +27,7 @@ let container = document.querySelector("div.mb-4")
 // it means that there are no more episodes in seson
 if (container == null) {
     // end of a series
-    if (current_episode_url_raw.search("E01") > 0){
+    if (current_episode_url_raw.search("E01") > 0) {
         alert("No more sesons!")
         exit()
     }
