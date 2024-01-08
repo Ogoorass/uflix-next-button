@@ -10,6 +10,8 @@ permissions:
   pull-requests: write
   repository-projects: write
 
+env:
+  NEW_TAG: v1.0
 
 jobs:
   Zip-and-release:
