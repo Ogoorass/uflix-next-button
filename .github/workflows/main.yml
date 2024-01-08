@@ -27,7 +27,7 @@ jobs:
         run: cp manifest_chrome.json manifest.json ; zip -r uflix-next-button-chrome.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
 
       - name: Determine new tag
-        run: wget https://github.com/Ogoorass/uflix-next-button/releases/latest; html_tag=`cat latest | grep tag/v | head -n 1`; old_version=`echo ${html_tag##*/tag/v} | head -c 1`; new_version=$((old_version + 1)); NEW_TAG=v$new_version.0; echo $NEW_TAG;
+        run: wget https://github.com/Ogoorass/uflix-next-button/releases/latest; html_tag=`cat latest | grep tag/v | head -n 1`; old_version=`echo ${html_tag##*/tag/v} | head -c 1`; new_version=$((old_version + 1)); NEW_TAG=v$new_version.0 >> $GITHUB_ENV
 
 
       - name: Create Draft Release
