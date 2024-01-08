@@ -36,7 +36,8 @@ jobs:
           draft: true
           prerelease: false
 
-      - uses: actions/upload-release-asset@v1.0.1
+      - name: Upload Firefox release
+        uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -45,7 +46,8 @@ jobs:
           asset_name: uflix-next-button-firefox.zip
           asset_content_type: application/zip
 
-      - uses: actions/upload-release-asset@v1.0.1
+      - name: Upload Chrome release
+        uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -54,7 +56,8 @@ jobs:
           asset_name: uflix-next-button-chrome.zip
           asset_content_type: application/zip
 
-      - uses: eregon/publish-release@v1
+      - name: Publish release
+        uses: eregon/publish-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
