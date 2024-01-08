@@ -10,6 +10,8 @@ permissions:
   pull-requests: write
   repository-projects: write
 
+env_var: ${{ vars.ENV_CONTEXT_VAR }}
+
 jobs:
   Zip-and-release:
     runs-on: ubuntu-latest
@@ -24,7 +26,9 @@ jobs:
         run: cp manifest_chrome.json manifest.json ; zip -r uflix-next-button-chrome.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
 
       - name: Determine new tag
-        run: wget https://github.com/Ogoorass/uflix-next-button/releases/latest; html_tag=`cat latest | grep tag/v | head -n 1`; old_version=`echo ${html_tag##*/tag/v} | head -c 1`; new_version=$((old_version + 1)); new_tag=v$new_version.0
+        run: wget https://github.com/Ogoorass/uflix-next-button/releases/latest; html_tag=`cat latest | grep tag/v | head -n 1`; old_version=`echo ${html_tag##*/tag/v} | head -c 1`; new_version=$((old_version + 1)); NEW_TAG=v$new_version.0
+        env:
+          NEW_TAG: $${{ vars.NEW_TAG }}
 
       - name: Create Draft Release
         id: create_release
@@ -33,7 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: $new_tag
+          tag_name: ${{ vars.NEW_TAG }}
           release_name: uflix-next-button
           draft: true
           prerelease: false
