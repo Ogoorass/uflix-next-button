@@ -7,8 +7,10 @@ on:
 
 permissions:
   packages: write
-  packages: read
-
+  contents: write
+  pull-requests: write
+  repository-projects: write
+  
 jobs:
   To-Zip:
     runs-on: ubuntu-latest
