@@ -3,7 +3,7 @@ name: Zip files to releases
 on: 
   push:
     branches:
-      -main
+      - main
 
 jobs:
   To-Zip:
