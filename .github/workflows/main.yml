@@ -10,7 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   repository-projects: write
-  
+
 jobs:
   To-Zip:
     runs-on: ubuntu-latest
@@ -18,11 +18,15 @@ jobs:
       - name: Checkout 
         uses: actions/checkout@v4
       
-      - name: Create firefox release
-        run: cp manifest_firefox.json manifest.json ; zip -r uflix-next-button-firefox.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json ; ls
+      - name: Create Firefox release
+        run: cp manifest_firefox.json manifest.json ; zip -r uflix-next-button-firefox.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
+
+      - name: Create Chrome release
+        run: cp manifest_chrome.json manifest.json ; zip -r uflix-next-button-chrome.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
 
       - name: Create Draft Release
         id: create_release
+
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,6 +35,7 @@ jobs:
           release_name: uflix-next-button
           draft: true
           prerelease: false
+
       - uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,6 +44,16 @@ jobs:
           asset_path: ./uflix-next-button-firefox.zip
           asset_name: uflix-next-button-firefox.zip
           asset_content_type: application/zip
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./uflix-next-button-chrome.zip
+          asset_name: uflix-next-button-chrome.zip
+          asset_content_type: application/zip
+
       - uses: eregon/publish-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
