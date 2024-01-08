@@ -11,7 +11,7 @@ permissions:
   repository-projects: write
 
 jobs:
-  To-Zip:
+  Zip-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
@@ -23,6 +23,9 @@ jobs:
       - name: Create Chrome release
         run: cp manifest_chrome.json manifest.json ; zip -r uflix-next-button-chrome.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
 
+      - name: Determine new tag
+        run: wget https://github.com/Ogoorass/uflix-next-button/releases/latest; html_tag=`cat latest | grep tag/v | head -n 1`; old_version=`echo ${html_tag##*/tag/v} | head -c 1`; new_version=$((old_version + 1)); new_tag=v$new_version.0
+
       - name: Create Draft Release
         id: create_release
 
@@ -30,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v1.1
+          tag_name: $new_tag
           release_name: uflix-next-button
           draft: true
           prerelease: false
