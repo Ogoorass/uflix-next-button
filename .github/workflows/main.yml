@@ -10,7 +10,8 @@ permissions:
   pull-requests: write
   repository-projects: write
 
-env_var: ${{ vars.ENV_CONTEXT_VAR }}
+env:
+  env_var: ${{ vars.ENV_CONTEXT_VAR }}
 
 jobs:
   Zip-and-release:
