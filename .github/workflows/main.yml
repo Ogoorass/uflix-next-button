@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  packages: write
+  packages: write | read
 
 jobs:
   To-Zip:
