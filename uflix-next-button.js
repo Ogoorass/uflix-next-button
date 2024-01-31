@@ -76,7 +76,7 @@ function getSeriesName() {
 }
 
 
-
+// utility for extracting id from 'S01E01' like syntax
 function extractEpisodeAndSeason(string) {
     const episode = string
         .slice(string.indexOf("E") + 1, string.indexOf("E") + 3)
@@ -86,12 +86,6 @@ function extractEpisodeAndSeason(string) {
 }
 
 function main() {
-    /*TODO features below
-          add ui elements with loading animation
-          fetch data
-          populate ui elements
-      */
-
     // top element, that shows current episode
     const breadcrumbName = document.querySelector("li.breadcrumb-item.active");
 
@@ -117,7 +111,6 @@ function main() {
     const dropdownLabelText = document.createTextNode(`S${currentSeason}E:`);
 
 
-
     /*
         <label>`dropdownLabelText`</label>
         <select>...</select>
@@ -131,6 +124,8 @@ function main() {
     let main_series_page_request = new XMLHttpRequest();
 
     // extract season info and use it
+    // hope it won't take too much time
+    // all tweaking ui happens after response of this request
     main_series_page_request.onload = function () {
         // safety first
         try {
@@ -138,7 +133,8 @@ function main() {
             let xmldoc = parser.parseFromString(this.responseText, "text/html");
             // get all divs that displays seasons, 
             // div#seasonAccordion contains all of the season, so dont need it
-            let seasonsdeoc = xmldoc.querySelectorAll("div[id^=season]:not(div#seasonAccordion)");
+            // I noticed that season0 is usually some bullshit
+            let seasonsdeoc = xmldoc.querySelectorAll("div[id^=season]:not(div#seasonAccordion):not(div#season0)");
 
             // main array of seasons
             let seasons = [];
@@ -162,6 +158,8 @@ function main() {
                 }
                 seasons.push({ id: seasonId, episodes: episodes });
             }
+
+            // TODO style dropdown so it doesnt look like crap
 
             // create opgroup for seasons
             seasons.forEach((season) => {
@@ -205,7 +203,7 @@ function main() {
 
     main_series_page_request.open(
         "GET",
-        "https://uflix.cc/serie/house-2004",
+        "https://uflix.cc/serie/" + getSeriesName(),
         true
     );
     main_series_page_request.send();
