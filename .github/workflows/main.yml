@@ -1,0 +1,68 @@
+name: Zip files to releases
+
+on: 
+  push:
+    branches: ['main']
+
+permissions:
+  packages: write
+  contents: write
+  pull-requests: write
+  repository-projects: write
+
+
+jobs:
+  Zip-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+      
+      - name: Create Firefox release
+        run: cp manifest_firefox.json manifest.json ; zip -r uflix-next-button-firefox.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
+
+      - name: Create Chrome release
+        run: cp manifest_chrome.json manifest.json ; zip -r uflix-next-button-chrome.zip ./* -x manifest_firefox.json manifest_chrome.json ; rm -f manifest.json
+
+      - name: Determine new tag
+        run: echo "NEW_TAG=v$(( ` wget https://github.com/Ogoorass/uflix-next-button/releases/latest 2>/dev/null; html_tag=\`cat latest | grep tag/v | head -n 1\`; echo \`tmp=${html_tag##*/tag/v}; echo ${tmp%.*}\` ` + 1 )).0" >> $GITHUB_ENV
+
+
+      - name: Create Draft Release
+        id: create_release
+
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: uflix-next-button
+          draft: true
+          prerelease: false
+
+      - name: Upload Firefox release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./uflix-next-button-firefox.zip
+          asset_name: uflix-next-button-firefox.zip
+          asset_content_type: application/zip
+
+      - name: Upload Chrome release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./uflix-next-button-chrome.zip
+          asset_name: uflix-next-button-chrome.zip
+          asset_content_type: application/zip
+
+      - name: Publish release
+        uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
