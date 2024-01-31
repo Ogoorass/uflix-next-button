@@ -75,42 +75,52 @@ function getSeriesName() {
     return document.URL.replace("https://uflix.cc/episode/", "").split("/")[0];
 }
 
-function getListOfEpisodes(season) {
 
-}
-
-
-
-function addDropdown(episodes) {
-
-}
 
 function extractEpisodeAndSeason(string) {
-    const episode = string.slice(string.indexOf("E") + 1, string.indexOf("E") + 3).trimStart("0");
-    const season = string.slice(string.indexOf("S") + 1, string.indexOf("S") + 3).trimStart("0");
+    const episode = string
+        .slice(string.indexOf("E") + 1, string.indexOf("E") + 3)
+    const season = string
+        .slice(string.indexOf("S") + 1, string.indexOf("S") + 3)
     return [episode, season];
 }
 
-
-
 function main() {
     /*TODO features below
-        add ui elements with loading animation
-        fetch data
-        populate ui elements
-    */
+          add ui elements with loading animation
+          fetch data
+          populate ui elements
+      */
 
     // top element, that shows current episode
     const breadcrumbName = document.querySelector("li.breadcrumb-item.active");
 
-    // extract exact number
-    const [currentEpisode, currentSeason] = extractEpisodeAndSeason(breadcrumbName.innerHTML);
+    // extract exact number of episode end season
+    const [currentEpisode, currentSeason] = extractEpisodeAndSeason(
+        breadcrumbName.innerHTML
+    );
 
-    // new element to replace old breadcrumbName
-    const dropdownAnchor = document.createElement("select");
-    dropdownAnchor.name = "Episodes";
+    // list of episodes
+    const dropdown = document.createElement("select");
+    dropdown.name = "Episodes";
 
-    breadcrumbName.replaceChildren(dropdownAnchor);
+    // lebel for dropdown
+    const dropdownLabel = document.createElement("label");
+    dropdownLabel.htmlFor = "Episodes";
+    dropdownLabel.style.marginRight = "10px"
+    const dropdownLabelText = document.createTextNode(`S${currentSeason}E:`);
+
+
+
+    /*
+        <label></label>
+        <select>...</select>
+    */
+    dropdownLabel.appendChild(dropdownLabelText);
+    breadcrumbName.replaceChildren(dropdownLabel);
+    breadcrumbName.appendChild(dropdown);
+
+
 
     let main_series_page_request = new XMLHttpRequest();
 
@@ -121,37 +131,50 @@ function main() {
         try {
             let parser = new DOMParser();
             let xmldoc = parser.parseFromString(this.responseText, "text/html");
-            let seasondoc = xmldoc.querySelector(`div#season${Number(currentSeason).toString()}`);
-            let episodeCardDocArray = seasondoc.querySelectorAll("div.card-episode");
-            let episodes = [];
-            for (const epcard of episodeCardDocArray.values()) {
-                episodes.push({
-                    id: epcard.querySelector("a.episode").innerHTML.split(" ")[1].trim(),
-                    name: epcard.querySelector("a.name").innerHTML.trim()
-                });
+            let seasonsdeoc = xmldoc.querySelectorAll("div[id^=season]:not(div#seasonAccordion)");
+            let seasons = [];
+            for (const seasondoc of seasonsdeoc) {
+
+                let seasonId = seasondoc.id.replace("season", "").length < 2 ? '0' + seasondoc.id.replace("season", "") : seasondoc.id.replace("season", "");
+                let episodeCardDocArray = seasondoc.querySelectorAll("div.card-episode");
+                let episodes = [];
+                for (const epcard of episodeCardDocArray.values()) {
+                    let id = epcard.querySelector("a.episode").innerHTML.split(" ")[1].trim();
+                    id = id.length < 2 ? '0' + id : id;
+                    episodes.push({
+                        id: id,
+                        name: epcard.querySelector("a.name").innerHTML.trim(),
+                    });
+                }
+                seasons.push({ id: seasonId, episodes: episodes });
             }
 
-            episodes.forEach((episode) => {
-                const epName = episode.id + " " + episode.name;
-                const epOption = document.createElement("option");
-                epOption.value = episode.id;
-                
-                const link = document.URL.slice(0, document.URL.indexOf("/S")) + `/S${currentSeason}E${episode.id.length < 2 ? '0' + episode.id : episode.id}`;
-                epOption.onclick = () => window.location.href = link;
 
-                const epText = document.createTextNode(epName);
-                
+            seasons.forEach((season) => {
+                const sOptGroup = document.createElement("optgroup");
+                sOptGroup.label = "Season " + season.id;
+                season.episodes.forEach((episode) => {
+                    const epName = Number(episode.id) + " " + episode.name;
+                    const epOption = document.createElement("option");
+                    epOption.value = season.id + episode.id;
 
-                epOption.appendChild(epText);
-                dropdownAnchor.appendChild(epOption);
-            })
+                    const link =
+                        document.URL.slice(0, document.URL.indexOf("/S")) +
+                        `/S${season.id}E${episode.id
+                        }`;
+                    epOption.onclick = () => (window.location.href = link);
 
-            dropdownAnchor.value = Number(currentEpisode).toString();
-            
+                    const epText = document.createTextNode(epName);
+
+                    epOption.appendChild(epText);
+                    sOptGroup.appendChild(epOption);
+                })
+                dropdown.appendChild(sOptGroup);
+            });
 
 
-        }
-        catch (e) {
+            dropdown.value = currentSeason + currentEpisode;
+        } catch (e) {
             alert(e);
         }
     };
@@ -163,10 +186,5 @@ function main() {
     );
     main_series_page_request.send();
 }
-
-
-
-
-
 
 main();
