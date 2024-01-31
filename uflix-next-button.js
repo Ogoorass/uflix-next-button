@@ -100,6 +100,12 @@ function main() {
         breadcrumbName.innerHTML
     );
 
+    // uncompleate link
+    // full link: https://uflix.cc/episode/house-2004/S07E15
+    // reduced link: https://uflix.cc/episode/house-2004/
+    const linkWithoutSeasonAndEpisode = document.URL.slice(0, document.URL.indexOf("/S")) + "/";
+
+
     // list of episodes
     const dropdown = document.createElement("select");
     dropdown.name = "Episodes";
@@ -113,7 +119,7 @@ function main() {
 
 
     /*
-        <label></label>
+        <label>`dropdownLabelText`</label>
         <select>...</select>
     */
     dropdownLabel.appendChild(dropdownLabelText);
@@ -121,25 +127,33 @@ function main() {
     breadcrumbName.appendChild(dropdown);
 
 
-
+    // fetching series main page containing all seasons info
     let main_series_page_request = new XMLHttpRequest();
 
-    // parse response as XML doc
-    // extract wanted episode
-    // parse it to the array as objects { id, name }
+    // extract season info and use it
     main_series_page_request.onload = function () {
+        // safety first
         try {
             let parser = new DOMParser();
             let xmldoc = parser.parseFromString(this.responseText, "text/html");
+            // get all divs that displays seasons, 
+            // div#seasonAccordion contains all of the season, so dont need it
             let seasonsdeoc = xmldoc.querySelectorAll("div[id^=season]:not(div#seasonAccordion)");
+
+            // main array of seasons
             let seasons = [];
             for (const seasondoc of seasonsdeoc) {
-
+                // convention is to make season id in the "link style" 
+                // so if it contains less than 2 characters add leading zero
                 let seasonId = seasondoc.id.replace("season", "").length < 2 ? '0' + seasondoc.id.replace("season", "") : seasondoc.id.replace("season", "");
+                // div containg all episodes
                 let episodeCardDocArray = seasondoc.querySelectorAll("div.card-episode");
                 let episodes = [];
                 for (const epcard of episodeCardDocArray.values()) {
+                    // "Episode 1" => ["Episode", "1"] => "1"
+                    // I hope it always works
                     let id = epcard.querySelector("a.episode").innerHTML.split(" ")[1].trim();
+                    // same convention as above
                     id = id.length < 2 ? '0' + id : id;
                     episodes.push({
                         id: id,
@@ -149,19 +163,28 @@ function main() {
                 seasons.push({ id: seasonId, episodes: episodes });
             }
 
-
+            // create opgroup for seasons
             seasons.forEach((season) => {
+                /* It looks like: 
+                    <optgroup label="Season X">
+                        <option value="0711">11 `episode name`</option> // value is <season id><episode id>
+                        ...
+                    <optgroup/>
+                    <optgroup label="Season X+1">
+                        ...
+                    <optgroup/>
+                */
                 const sOptGroup = document.createElement("optgroup");
                 sOptGroup.label = "Season " + season.id;
+                // create option for episodes
                 season.episodes.forEach((episode) => {
                     const epName = Number(episode.id) + " " + episode.name;
                     const epOption = document.createElement("option");
-                    epOption.value = season.id + episode.id;
+                    
+                    epOption.value = season.id + episode.id; // to distinguish all episodes form different seasons
 
-                    const link =
-                        document.URL.slice(0, document.URL.indexOf("/S")) +
-                        `/S${season.id}E${episode.id
-                        }`;
+                    // complete link
+                    const link = linkWithoutSeasonAndEpisode + `S${season.id}E${episode.id}`;
                     epOption.onclick = () => (window.location.href = link);
 
                     const epText = document.createTextNode(epName);
@@ -175,7 +198,8 @@ function main() {
 
             dropdown.value = currentSeason + currentEpisode;
         } catch (e) {
-            alert(e);
+            // I used it for debug, but I guess it could stay
+            alert("uflix-nex-button error: " + e);
         }
     };
 
