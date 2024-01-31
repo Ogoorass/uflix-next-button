@@ -1,3 +1,4 @@
+// TODO rewrite it in main(), posibly with less bullshit
 let current_episode_url_raw = document.URL;
 
 if (current_episode_url_raw.search("nextSeson") > 0) {
@@ -103,6 +104,16 @@ function main() {
     // list of episodes
     const dropdown = document.createElement("select");
     dropdown.name = "Episodes";
+    dropdown.style.backgroundColor = "#111113";
+    dropdown.style.color = "#707080";
+    dropdown.style.fontFamily = "Inter, sans-serif";
+    dropdown.style.borderColor = "#707080";
+    dropdown.style.borderRadius = "10px";
+    dropdown.style.borderWidth = "1px";
+    dropdown.style.padding = "3px";
+    dropdown.style.paddingLeft = "10px";
+
+
 
     // lebel for dropdown
     const dropdownLabel = document.createElement("label");
@@ -159,7 +170,6 @@ function main() {
                 seasons.push({ id: seasonId, episodes: episodes });
             }
 
-            // TODO style dropdown so it doesnt look like crap
 
             // create opgroup for seasons
             seasons.forEach((season) => {
@@ -178,7 +188,7 @@ function main() {
                 season.episodes.forEach((episode) => {
                     const epName = Number(episode.id) + " " + episode.name;
                     const epOption = document.createElement("option");
-                    
+
                     epOption.value = season.id + episode.id; // to distinguish all episodes form different seasons
 
                     // complete link
@@ -195,6 +205,9 @@ function main() {
 
 
             dropdown.value = currentSeason + currentEpisode;
+            // style current episode so it stands out
+            const currentOption = dropdown.querySelector(`option[value="${currentSeason + currentEpisode}"]`);
+            currentOption.style.color = "#ffffff";
         } catch (e) {
             // I used it for debug, but I guess it could stay
             alert("uflix-nex-button error: " + e);
