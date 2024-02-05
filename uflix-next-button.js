@@ -76,14 +76,30 @@ function getSeriesName() {
     return document.URL.replace("https://uflix.cc/episode/", "").split("/")[0];
 }
 
-
 // utility for extracting id from 'S01E01' like syntax
 function extractEpisodeAndSeason(string) {
-    const episode = string
-        .slice(string.indexOf("E") + 1, string.indexOf("E") + 3)
-    const season = string
-        .slice(string.indexOf("S") + 1, string.indexOf("S") + 3)
+    const indexOfE = string.indexOf("E");
+    const indexOfS = string.indexOf("S");
+    const episode = string.slice(indexOfE + 1, indexOfE + 3);
+    const season = string.slice(indexOfS + 1, indexOfS + 3);
     return [episode, season];
+}
+
+// removes season and episode from link
+function removeSeasonAndEpisode(url) {
+    return url.slice(0, document.URL.indexOf("/S")) + "/";
+}
+
+// convention is to convert number like '1' to '01'
+function numberToConventionNumber(number) {
+    return number.length < 2 ? "0" + number : number;
+}
+
+// extracts season id from div's id in convenient way
+// div id: season1
+// extracted: 01
+function getSeasonIdFromDivId(divId) {
+    return numberToConventionNumber(divId.replace("season", ""));
 }
 
 function main() {
@@ -98,8 +114,7 @@ function main() {
     // uncompleate link
     // full link: https://uflix.cc/episode/house-2004/S07E15
     // reduced link: https://uflix.cc/episode/house-2004/
-    const linkWithoutSeasonAndEpisode = document.URL.slice(0, document.URL.indexOf("/S")) + "/";
-
+    let linkWithoutSeasonAndEpisode = removeSeasonAndEpisode(document.URL);
 
     // list of episodes
     const dropdown = document.createElement("select");
@@ -113,23 +128,19 @@ function main() {
     dropdown.style.padding = "3px";
     dropdown.style.paddingLeft = "10px";
 
-
-
     // lebel for dropdown
     const dropdownLabel = document.createElement("label");
     dropdownLabel.htmlFor = "Episodes";
-    dropdownLabel.style.marginRight = "10px"
+    dropdownLabel.style.marginRight = "10px";
     const dropdownLabelText = document.createTextNode(`S${currentSeason}E:`);
 
-
     /*
-        <label>`dropdownLabelText`</label>
-        <select>...</select>
-    */
+            <label>`dropdownLabelText`</label>
+            <select>...</select>
+        */
     dropdownLabel.appendChild(dropdownLabelText);
     breadcrumbName.replaceChildren(dropdownLabel);
     breadcrumbName.appendChild(dropdown);
-
 
     // fetching series main page containing all seasons info
     let main_series_page_request = new XMLHttpRequest();
@@ -142,26 +153,30 @@ function main() {
         try {
             let parser = new DOMParser();
             let xmldoc = parser.parseFromString(this.responseText, "text/html");
-            // get all divs that displays seasons, 
+            // get all divs that displays seasons,
             // div#seasonAccordion contains all of the season, so dont need it
             // I noticed that season0 is usually some bullshit
-            let seasonsdeoc = xmldoc.querySelectorAll("div[id^=season]:not(div#seasonAccordion):not(div#season0)");
+            let seasonsdeoc = xmldoc.querySelectorAll(
+                "div[id^=season]:not(div#seasonAccordion):not(div#season0)"
+            );
 
             // main array of seasons
             let seasons = [];
             for (const seasondoc of seasonsdeoc) {
-                // convention is to make season id in the "link style" 
+                // convention is to make season id in the "link style"
                 // so if it contains less than 2 characters add leading zero
-                let seasonId = seasondoc.id.replace("season", "").length < 2 ? '0' + seasondoc.id.replace("season", "") : seasondoc.id.replace("season", "");
+                let seasonId = getSeasonIdFromDivId(seasondoc.id);
                 // div containg all episodes
-                let episodeCardDocArray = seasondoc.querySelectorAll("div.card-episode");
+                let episodeCardDocArray =
+                    seasondoc.querySelectorAll("div.card-episode");
                 let episodes = [];
                 for (const epcard of episodeCardDocArray.values()) {
                     // "Episode 1" => ["Episode", "1"] => "1"
                     // I hope it always works
-                    let id = epcard.querySelector("a.episode").innerHTML.split(" ")[1].trim();
-                    // same convention as above
-                    id = id.length < 2 ? '0' + id : id;
+                    const id = numberToConventionNumber(
+                        epcard.querySelector("a.episode").innerHTML.split(" ")[1].trim()
+                    );
+
                     episodes.push({
                         id: id,
                         name: epcard.querySelector("a.name").innerHTML.trim(),
@@ -170,18 +185,17 @@ function main() {
                 seasons.push({ id: seasonId, episodes: episodes });
             }
 
-
             // create opgroup for seasons
             seasons.forEach((season) => {
                 /* It looks like: 
-                    <optgroup label="Season X">
-                        <option value="0711">11 `episode name`</option> // value is <season id><episode id>
-                        ...
-                    <optgroup/>
-                    <optgroup label="Season X+1">
-                        ...
-                    <optgroup/>
-                */
+                                    <optgroup label="Season X">
+                                        <option value="0711">11 `episode name`</option> // value is <season id><episode id>
+                                        ...
+                                    <optgroup/>
+                                    <optgroup label="Season X+1">
+                                        ...
+                                    <optgroup/>
+                                */
                 const sOptGroup = document.createElement("optgroup");
                 sOptGroup.label = "Season " + season.id;
                 // create option for episodes
@@ -192,21 +206,23 @@ function main() {
                     epOption.value = season.id + episode.id; // to distinguish all episodes form different seasons
 
                     // complete link
-                    const link = linkWithoutSeasonAndEpisode + `S${season.id}E${episode.id}`;
+                    const link =
+                        linkWithoutSeasonAndEpisode + `S${season.id}E${episode.id}`;
                     epOption.onclick = () => (window.location.href = link);
 
                     const epText = document.createTextNode(epName);
 
                     epOption.appendChild(epText);
                     sOptGroup.appendChild(epOption);
-                })
+                });
                 dropdown.appendChild(sOptGroup);
             });
 
-
             dropdown.value = currentSeason + currentEpisode;
             // style current episode so it stands out
-            const currentOption = dropdown.querySelector(`option[value="${currentSeason + currentEpisode}"]`);
+            const currentOption = dropdown.querySelector(
+                `option[value="${currentSeason + currentEpisode}"]`
+            );
             currentOption.style.color = "#ffffff";
         } catch (e) {
             // I used it for debug, but I guess it could stay
