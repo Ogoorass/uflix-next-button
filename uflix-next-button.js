@@ -118,12 +118,11 @@ const commonButtonDivStyles = {
 };
 
 const nextButtonDivStyle = {
-  ...commonButtonDivStyles
+  ...commonButtonDivStyles,
 };
 
-
 const previousButtoDivStyle = {
-  ...commonButtonDivStyles
+  ...commonButtonDivStyles,
 };
 
 const nextButtonAStyle = {
@@ -138,7 +137,6 @@ const previousButtonAStyle = {
   marginLeft: "20px",
   marginRight: "auto",
 };
-
 
 // TODO: all style like this with:
 // Object.entries(<style>).forEach(([key, val]) => {<element>.style[key] = val;});
@@ -200,7 +198,12 @@ function main() {
   document.querySelector("body").addEventListener("click", (event) => {
     const parent = event.target.parentNode;
     console.log(parent);
-    if (parent.id !== dropdown.id && parent.id !== dropdownContent.id && !parent.id.includes("season")) {
+    if (
+      parent.id !== dropdown.id &&
+      parent.id !== dropdownContent.id &&
+      !parent.id.includes("season") &&
+      dropdownContent.style.display === "block"
+    ) {
       console.log("clicked out of dropdown");
       switchDropdown(dropdownContent);
       changeButtonStyle(dropdownButton);
@@ -337,13 +340,18 @@ function main() {
       // this season and previous episode (counting from 0, because it it an array)
       // urls, on the other hand, count from 1, so it is kind of bizzare
       if (
-        seasons[Number(currentSeason) - 1].episodes[Number(currentEpisode) - 2] ===
-        undefined
+        seasons[Number(currentSeason) - 1].episodes[
+        Number(currentEpisode) - 2
+        ] === undefined
       ) {
         if (seasons[Number(currentSeason) - 2] !== undefined) {
           linkPrevious =
             linkWithoutSeasonAndEpisode +
-            `S${numberToConventionNumber(Number(currentSeason) - 1)}E${numberToConventionNumber(seasons[Number(currentSeason) - 2].episodes.length)}`;
+            `S${numberToConventionNumber(
+              Number(currentSeason) - 1
+            )}E${numberToConventionNumber(
+              seasons[Number(currentSeason) - 2].episodes.length
+            )}`;
           cardStreamDiv.appendChild(aLinkPrevious);
         }
       } else {
